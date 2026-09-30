@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OfertaHub — Catálogo de produtos</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzI0NDdGNSIvPjxwYXRoIGQ9Ik05IDEyaDE0bC0xLjUgMTBoLTExeiIgZmlsbD0iI0ZGRDIzRiIvPjxwYXRoIGQ9Ik0xMi41IDEyYTMuNSAzLjUgMCAwIDEgNyAwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+Cg==">
+  <style>
+:root {
+  --ink: #12233a; --muted: #5d6b7e; --bg: #f3f6f9; --card: #fff; --line: #dde4ec;
+  --blue: #2447f5; --blue-dark: #1933b8; --sun: #ffd23f; --ok: #12805c; --warn: #b45309;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.5; }
+img { max-width: 100%; }
+h2 { font-size: 1.4rem; margin: 2rem 0 1rem; letter-spacing: -.01em; }
+.container { width: min(1180px, 100% - 2rem); margin-inline: auto; }
+.muted { color: var(--muted); font-weight: 400; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+.header { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+.header__row { display: flex; gap: 1rem; align-items: center; padding: .8rem 0; }
+.logo { display: flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.4rem; color: var(--ink); text-decoration: none; letter-spacing: -.03em; }
+.search { flex: 1; max-width: 520px; margin-left: auto; }
+.search input { width: 100%; padding: .65rem 1rem; border: 1px solid var(--line); border-radius: 999px; font: inherit; background: var(--bg); }
+.categories { display: flex; gap: .5rem; padding-bottom: .8rem; overflow-x: auto; }
+.chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: .4rem 1rem; border-radius: 999px; font: inherit; cursor: pointer; white-space: nowrap; }
+.chip:hover { border-color: var(--blue); }
+.chip.is-active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+.banner { margin-top: 1.2rem; padding: .7rem 1rem; border-radius: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; font-weight: 500; }
+.banner code { background: rgba(0,0,0,.06); padding: .1rem .5rem; border-radius: 6px; font-size: .85rem; }
+.banner--ok { background: #e3f5ee; color: var(--ok); }
+.banner--warn { background: #fdf0dc; color: var(--warn); }
+.banner--loading { background: #e8edff; color: var(--blue-dark); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); }
+.spinner { width: 16px; height: 16px; border: 3px solid #c9d3ff; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.grid { display: grid; gap: 1.2rem; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s; }
+.card:hover { box-shadow: 0 8px 24px rgba(18,35,58,.1); }
+.card__img { background: #fff; aspect-ratio: 1; display: grid; place-items: center; padding: 1.2rem; border-bottom: 1px solid var(--line); }
+.card__img img { max-height: 100%; object-fit: contain; }
+.card__body { padding: 1rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
+.card__title { margin: 0; font-size: 1rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card__desc { margin: 0; color: var(--muted); font-size: .9rem; }
+.card__footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-top: .6rem; }
+.tag { align-self: flex-start; background: #e8edff; color: var(--blue-dark); font-size: .78rem; font-weight: 600; padding: .15rem .6rem; border-radius: 6px; }
+.rating { display: flex; gap: .4rem; align-items: center; font-size: .85rem; color: var(--muted); }
+.stars { color: #e5a400; letter-spacing: 1px; }
+.price { font-size: 1.15rem; background: linear-gradient(transparent 60%, var(--sun) 60%); padding: 0 .2rem; }
+.price--big { font-size: 1.8rem; align-self: flex-start; }
+
+.btn { border: 0; border-radius: 8px; padding: .55rem 1rem; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+.btn--primary { background: var(--blue); color: #fff; }
+.btn--primary:hover { background: var(--blue-dark); }
+.btn--buy { background: var(--ink); color: #fff; padding: .8rem 2rem; font-size: 1.05rem; }
+.btn--buy:hover { background: #000; }
+.btn--small { background: var(--warn); color: #fff; padding: .3rem .8rem; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 1rem; }
+.toolbar h2 { margin-bottom: 0; }
+.sort select { padding: .45rem .7rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--card); margin-left: .4rem; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 3rem 0; }
+.skeleton { height: 340px; border-radius: 14px; background: linear-gradient(90deg, #e6ebf1 25%, #f1f4f8 50%, #e6ebf1 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.modal { position: fixed; inset: 0; background: rgba(18,35,58,.6); display: grid; place-items: center; padding: 1rem; z-index: 50; }
+.modal__box { background: var(--card); border-radius: 16px; max-width: 860px; width: 100%; max-height: 92vh; overflow: auto; position: relative; animation: pop .18s ease-out; }
+@keyframes pop { from { transform: scale(.96); opacity: 0; } }
+.modal__close { position: absolute; top: .6rem; right: .8rem; border: 0; background: var(--bg); width: 36px; height: 36px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; }
+.modal__content { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem; }
+.modal__img { width: 100%; max-height: 380px; object-fit: contain; }
+.modal__info { display: flex; flex-direction: column; gap: .8rem; }
+.modal__info h2 { margin: 0; }
+.modal__info p { margin: 0; color: var(--muted); }
+
+.footer { margin-top: 3rem; padding: 1.5rem 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+
+@media (max-width: 720px) {
+  .header__row { flex-wrap: wrap; }
+  .search { max-width: none; flex-basis: 100%; order: 3; }
+  .modal__content { grid-template-columns: 1fr; padding: 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+</style>
+</head>
+<body>
+  <div id="app"><p style="padding:2rem;font-family:system-ui">Carregando OfertaHub…</p></div>
+  <script>
+// Funções de apoio para exibir os dados.
+const CATEGORY_LABELS = {
+  electronics: 'Eletrônicos',
+  jewelery: 'Joias',
+  "men's clothing": 'Moda masculina',
+  "women's clothing": 'Moda feminina',
+};
+
+const categoryLabel = (c) => CATEGORY_LABELS[c] || c;
+const formatPrice = (v) =>
+  v.toLocaleString('pt-BR', { style: 'currency', currency: 'USD' });
+const escapeHtml = (t) =>
+  String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Imagem do produto; se não houver (dados fictícios) ou falhar, mostra um placeholder.
+const PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#E8EDF3"/><path d="M60 80h80l-8 60H68z" fill="#C3CEDB"/></svg>');
+const productImage = (p) => p.image || PLACEHOLDER;
+
+function stars(rate) {
+  const full = Math.round(rate);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+// ============================================================
+// CAMADA DE API — é aqui que o site conversa com a API externa.
+// Nenhum outro arquivo faz fetch. A interface só chama estas funções.
+// ============================================================
+const BASE_URL = 'https://fakestoreapi.com';
+
+async function request(path) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000); // desiste após 6s
+
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, { signal: controller.signal });
+    if (!response.ok) throw new Error(`Erro ${response.status} ao acessar ${path}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// GET https://fakestoreapi.com/products
+function getProducts() {
+  return request('/products');
+}
+
+// GET https://fakestoreapi.com/products/:id
+function getProductById(id) {
+  return request(`/products/${id}`);
+}
+
+// GET https://fakestoreapi.com/products/categories
+function getCategories() {
+  return request('/products/categories');
+}
+
+// Dados fictícios usados SOMENTE se a API externa estiver indisponível.
+// Mesmo formato de resposta da Fake Store API.
+const item = (id, title, price, category, description, rate, count) => ({
+  id, title, price, category, description, image: null, rating: { rate, count },
+});
+
+const FALLBACK_PRODUCTS = [
+  item(1, 'Mochila para notebook 15"', 109.95, "men's clothing", 'Mochila resistente com compartimento acolchoado para notebook e bolsos organizadores para o dia a dia.', 3.9, 120),
+  item(2, 'Camiseta slim fit', 22.3, "men's clothing", 'Camiseta de algodão com corte ajustado, confortável para uso diário.', 4.1, 259),
+  item(3, 'Pulseira banhada a ouro', 168, 'jewelery', 'Pulseira delicada banhada a ouro, ideal para presentear.', 4.6, 400),
+  item(4, 'SSD externo 1TB', 64, 'electronics', 'Armazenamento portátil de alta velocidade com conexão USB-C.', 4.8, 205),
+  item(5, 'Jaqueta corta-vento feminina', 56.99, "women's clothing", 'Jaqueta leve, com capuz e proteção contra vento e garoa.', 2.6, 235),
+  item(6, 'Monitor 24" Full HD', 199.99, 'electronics', 'Tela IPS de 24 polegadas com bordas finas e ótima reprodução de cores.', 4.2, 140),
+];
+
+// Hook simples: busca os dados na API e avisa a interface sobre o estado.
+// status: 'loading' | 'ready'    source: 'api' | 'fallback'
+
+function useProducts(onChange) {
+  const state = { status: 'loading', source: null, products: [], categories: [] };
+  const update = (changes) => { Object.assign(state, changes); onChange({ ...state }); };
+
+  async function load() {
+    update({ status: 'loading' });
+    try {
+      // Requisições reais à API externa
+      const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+      update({ status: 'ready', source: 'api', products, categories });
+    } catch (error) {
+      console.warn('API indisponível, usando dados de demonstração:', error);
+      const categories = [...new Set(FALLBACK_PRODUCTS.map((p) => p.category))];
+      update({ status: 'ready', source: 'fallback', products: FALLBACK_PRODUCTS, categories });
+    }
+  }
+
+  return { load };
+}
+
+function Header() {
+  return `
+    <header class="header">
+      <div class="container header__row">
+        <a class="logo" href="./"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzI0NDdGNSIvPjxwYXRoIGQ9Ik05IDEyaDE0bC0xLjUgMTBoLTExeiIgZmlsbD0iI0ZGRDIzRiIvPjxwYXRoIGQ9Ik0xMi41IDEyYTMuNSAzLjUgMCAwIDEgNyAwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+Cg==" alt="" width="32" height="32"><span>OfertaHub</span></a>
+        <form class="search" role="search" onsubmit="return false">
+          <input id="search" type="search" placeholder="Buscar produtos…" aria-label="Buscar produtos">
+        </form>
+      </div>
+      <nav class="container categories" id="categories" aria-label="Categorias"></nav>
+    </header>`;
+}
+
+
+// Recebe um produto (vindo da API) e devolve o HTML do card.
+function ProductCard(product) {
+  const shortDescription = product.description.length > 80
+    ? product.description.slice(0, 80).trim() + '…'
+    : product.description;
+
+  return `
+    <article class="card">
+      <div class="card__img">
+        <img src="${productImage(product)}" alt="${escapeHtml(product.title)}" loading="lazy"
+             onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+      </div>
+      <div class="card__body">
+        <span class="tag">${categoryLabel(product.category)}</span>
+        <h3 class="card__title">${escapeHtml(product.title)}</h3>
+        <p class="card__desc">${escapeHtml(shortDescription)}</p>
+        <div class="rating" title="${product.rating.rate} de 5">
+          <span class="stars">${stars(product.rating.rate)}</span>
+          <span>${product.rating.rate} (${product.rating.count})</span>
+        </div>
+        <div class="card__footer">
+          <strong class="price">${formatPrice(product.price)}</strong>
+          <button class="btn btn--primary" data-product-id="${product.id}">Ver produto</button>
+        </div>
+      </div>
+    </article>`;
+}
+
+
+const BUY_URL = 'https://example.com/comprar'; // URL demonstrativa
+
+function render(product) {
+  return `
+    <div class="modal__content">
+      <img class="modal__img" src="${productImage(product)}" alt="${escapeHtml(product.title)}"
+           onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+      <div class="modal__info">
+        <span class="tag">${categoryLabel(product.category)}</span>
+        <h2 id="modal-title">${escapeHtml(product.title)}</h2>
+        <div class="rating"><span class="stars">${stars(product.rating.rate)}</span>
+          <span>${product.rating.rate} (${product.rating.count} avaliações)</span></div>
+        <p>${escapeHtml(product.description)}</p>
+        <strong class="price price--big">${formatPrice(product.price)}</strong>
+        <a class="btn btn--buy" href="${BUY_URL}?produto=${product.id}" target="_blank" rel="noopener">Comprar</a>
+      </div>
+    </div>`;
+}
+
+// Abre o modal com os dados do card e, em seguida, busca o produto completo
+// na API pelo id (getProductById) — segunda demonstração da integração.
+async function openProductModal(product, fromApi) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'modal-title');
+  modal.innerHTML = `<div class="modal__box"><button class="modal__close" aria-label="Fechar">×</button>
+    <div id="modal-body">${render(product)}</div></div>`;
+  document.body.append(modal);
+
+  const close = () => { modal.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => e.key === 'Escape' && close();
+  document.addEventListener('keydown', onKey);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || e.target.classList.contains('modal__close')) close();
+  });
+
+  if (fromApi) {
+    try {
+      const full = await getProductById(product.id);
+      const body = modal.querySelector('#modal-body');
+      if (body) body.innerHTML = render(full);
+    } catch { /* mantém os dados já carregados */ }
+  }
+}
+
+
+function HomePage(root) {
+  // Filtros escolhidos pelo usuário
+  const filters = { search: '', category: 'all', sort: 'default' };
+  let data = { status: 'loading', source: null, products: [], categories: [] };
+
+  root.innerHTML = `
+    ${Header()}
+    <main class="container">
+      <div id="api-status"></div>
+      <section><h2>Em destaque</h2><div class="grid" id="featured"></div></section>
+      <section>
+        <div class="toolbar">
+          <h2>Todos os produtos <span id="count" class="muted"></span></h2>
+          <label class="sort">Ordenar por
+            <select id="sort">
+              <option value="default">Relevância</option>
+              <option value="asc">Menor preço</option>
+              <option value="desc">Maior preço</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid" id="grid"></div>
+      </section>
+    </main>
+    <footer class="footer"><div class="container">OfertaHub — projeto acadêmico de integração com API · dados: fakestoreapi.com</div></footer>`;
+
+  const $ = (id) => root.querySelector(id);
+
+  // ----- busca de dados (hook) -----
+  const { load } = useProducts((newData) => { data = newData; render(); });
+
+  // ----- render -----
+  function visibleProducts() {
+    let list = data.products.filter((p) =>
+      (filters.category === 'all' || p.category === filters.category) &&
+      p.title.toLowerCase().includes(filters.search));
+    if (filters.sort === 'asc') list = [...list].sort((a, b) => a.price - b.price);
+    if (filters.sort === 'desc') list = [...list].sort((a, b) => b.price - a.price);
+    return list;
+  }
+
+  function renderStatus() {
+    const box = $('#api-status');
+    if (data.status === 'loading') {
+      box.innerHTML = `<div class="banner banner--loading"><span class="spinner"></span> Carregando produtos da API…</div>`;
+    } else if (data.source === 'api') {
+      box.innerHTML = `<div class="banner banner--ok"><span class="dot"></span> Produtos carregados através de API externa
+        <code>GET fakestoreapi.com/products</code></div>`;
+    } else {
+      box.innerHTML = `<div class="banner banner--warn">Não foi possível acessar a API agora. Exibindo produtos de demonstração.
+        <button class="btn btn--small" id="retry">Tentar novamente</button></div>`;
+      $('#retry').onclick = load;
+    }
+  }
+
+  function renderCategories() {
+    const all = ['all', ...data.categories];
+    $('#categories').innerHTML = all.map((c) =>
+      `<button class="chip ${c === filters.category ? 'is-active' : ''}" data-category="${c}">
+        ${c === 'all' ? 'Todos' : categoryLabel(c)}</button>`).join('');
+  }
+
+  function renderProducts() {
+    if (data.status === 'loading') {
+      $('#featured').innerHTML = $('#grid').innerHTML = '<div class="skeleton"></div>'.repeat(4);
+      $('#count').textContent = '';
+      return;
+    }
+    const featured = [...data.products].sort((a, b) => b.rating.rate - a.rating.rate).slice(0, 4);
+    $('#featured').innerHTML = featured.map(ProductCard).join('');
+
+    const list = visibleProducts();
+    $('#count').textContent = `(${list.length})`;
+    $('#grid').innerHTML = list.length
+      ? list.map(ProductCard).join('')
+      : '<p class="empty">Nenhum produto encontrado. Tente outra busca ou categoria.</p>';
+  }
+
+  function render() { renderStatus(); renderCategories(); renderProducts(); }
+
+  // ----- eventos -----
+  $('#search').oninput = (e) => { filters.search = e.target.value.toLowerCase(); renderProducts(); };
+  $('#sort').onchange = (e) => { filters.sort = e.target.value; renderProducts(); };
+  root.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-category]');
+    if (chip) { filters.category = chip.dataset.category; renderCategories(); renderProducts(); }
+
+    const btn = e.target.closest('[data-product-id]');
+    if (btn) {
+      const product = data.products.find((p) => p.id === Number(btn.dataset.productId));
+      openProductModal(product, data.source === 'api');
+    }
+  });
+
+  render();
+  load();
+}
+
+// Ponto de entrada: monta a página inicial.
+// Se algo der errado, mostra o erro na tela em vez de deixá-la em branco.
+try {
+  window.__ofertaHubStarted = true;
+  HomePage(document.getElementById('app'));
+} catch (error) {
+  console.error(error);
+  document.getElementById('app').innerHTML =
+    '<p style="padding:2rem;font-family:system-ui">Erro ao iniciar o site: ' + error.message + '</p>';
+}
+
+  </script>
+
+  <script>
+    // Aviso caso os scripts não tenham carregado (ex.: index.html aberto de dentro do .zip)
+    setTimeout(function () {
+      if (!window.__ofertaHubStarted) {
+        document.getElementById('app').innerHTML =
+          '<p style="padding:2rem;font-family:system-ui;max-width:640px">Os arquivos do site não foram carregados. ' +
+          'Extraia o .zip inteiro (botão direito &rarr; Extrair tudo) e abra o index.html da pasta extraída, ' +
+          'ou use o arquivo <b>OfertaHub-standalone.html</b>.</p>';
+      }
+    }, 2500);
+  </script>
+</body>
+</html>
